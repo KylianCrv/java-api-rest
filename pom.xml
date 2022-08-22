@@ -2,18 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.m2i</groupId>
-    <artifactId>rest-lesson</artifactId>
+    <groupId>fr.m2i</groupId>
+    <artifactId>java-api-rest</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>rest-lesson</name>
+    <name>java-api-rest</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>javax</groupId>
@@ -21,7 +21,7 @@
             <version>7.0</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <!--JAX-RS avec Jersey-->
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
@@ -48,7 +48,7 @@
             <artifactId>jersey-media-jaxb</artifactId>
             <version>2.28</version>
         </dependency>
-        
+
         <!--org.glassfish.jersey.server.ContainerException: java.lang.NoClassDefFoundError: javax/xml/bind/annotation/XmlElement-->
         <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
         <dependency>
