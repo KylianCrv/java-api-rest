@@ -133,4 +133,45 @@ public class BookResource {
 
         return result.toString();
     }
+
+    @GET
+    @Path("/details/{id}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getDetailsTextBookById(@PathParam("id") int id) {
+        System.out.println("Endpoint : getDetaisById");
+
+        return "le détail du livre numéro : " + id + " - il s'agit d'une autobiographie";
+
+    }
+
+    @GET
+    @Path("/details/{id}")
+    @Produces(MediaType.TEXT_XML)
+    public String getDetailsXMLBookById(@PathParam("id") int id) {
+        System.out.println("Endpoint : getDetailsXMLById");
+
+        return "<?xml version=\"1.0\"?>"
+                + "<details>"
+                + "le détail du livre numéro : " + id + " - il s'agit d'une autobiographie";
+
+    }
+
+    @GET
+    @Path("/details/{id}")
+    @Produces(MediaType.TEXT_HTML)
+    public String getDetailsHTMLBookById(@PathParam("id") int id) {
+        System.out.println("Endpoint : getDetailsHTMLById");
+
+        return "<html>\n"
+                + "    <head>"
+                + "        <title>Le détail de mon livre</title>"
+                + "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">"
+                + "    </head>"
+                + "    <body>"
+                + "        <h1>le détail du livre numéro :" + id + " - il s'agit d'une autobiographie</h1>"
+                + "    </body>"
+                + "</html>";
+
+    }
+
 }
