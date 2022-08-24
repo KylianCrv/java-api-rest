@@ -37,14 +37,21 @@ class Annuaire {
         return null;
     }
 
-    public Personne delete(Long id, Personne personne) {
-        for (int i = 0; i < personnes.size(); i++) {
-            Personne personneToDelete = personnes.get(i);
+    public boolean delete(Long id) {
+        Personne toDelete = getPersonneById(id);
 
-            if (personneToDelete.getId() == id) {
-                personnes.remove(personneToDelete);
+        if (toDelete == null) {
+            return false;
+        }
 
-                return personne;
+        personnes.remove(toDelete);
+        return true;
+    }
+
+    public Personne getPersonneById(Long id) {
+        for (Personne p : personnes) {
+            if (p.getId().equals(id)) {
+                return p;
             }
         }
         return null;

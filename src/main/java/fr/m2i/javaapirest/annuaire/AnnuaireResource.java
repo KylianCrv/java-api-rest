@@ -50,6 +50,39 @@ public class AnnuaireResource {
         return annuaire.getPersonnes();
     }
 
+    //URI :
+    @Path("{id}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPersonneById(@PathParam("id") Long id, @Context HttpServletRequest request) {
+        System.out.println("getPersonneById");
+
+        //vérifie le param id => bad request si invalide
+        if (id == null || id < 1L) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Le paramètre id est invalide").build();
+        }
+
+        //Récuperer l'annuaire stocké dans la session
+        Annuaire annuaire = (Annuaire) request.getSession().getAttribute("annuaire");
+        String notFoundErr = String.format("La personne avec l'id %d n'existe pas ", id);
+
+        //L'annuaire n'est pas encore créé => not found
+        if (annuaire == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(notFoundErr).build();
+        }
+
+        Personne personne = annuaire.getPersonneById(id);
+
+        //Personne non trouvé => not found
+        if (personne == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(notFoundErr).build();
+
+        }
+
+        return Response.status(Response.Status.OK).entity(personne).build();
+    }
+
     @PUT
     @Path("/update-{id}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -75,26 +108,32 @@ public class AnnuaireResource {
     }
 
     @DELETE
-    @Path("/delete-{id}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Personne deletePersonne(Personne personne, @PathParam("id") Long id, @Context HttpServletRequest request) {
+    public Response deletePersonne(@PathParam("id") Long id, @Context HttpServletRequest request) {
         System.out.println("deletePersonne");
+
+        //vérifie le param id => bad request si invalide
+        if (id == null || id < 1L) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Le paramètre id est invalide").build();
+        }
 
         //Récuperer l'annuaire stocké dans la session
         Annuaire annuaire = (Annuaire) request.getSession().getAttribute("annuaire");
+        String notFoundErr = String.format("La personne avec l'id %d n'existe pas ", id);
 
-        //Dans le cas où mon annuaire est null, je l'instancie
+        //L'annuaire n'est pas encore créé => not found
         if (annuaire == null) {
-            annuaire = new Annuaire();
+            return Response.status(Response.Status.NOT_FOUND).entity(notFoundErr).build();
         }
 
-        //Modification de la personne
-        Personne deleted = annuaire.delete(id, personne);
+        boolean success = annuaire.delete(id);
 
-        //Créer, met a jour mon annuaire en session
-        request.getSession().setAttribute("annuaire", annuaire);
+        if (!success) {
+            return Response.status(Response.Status.NOT_FOUND).entity(notFoundErr).build();
+        }
 
-        return deleted;
+        return Response.status(Response.Status.OK).entity("La personne a été supprimé").build();
     }
 }
