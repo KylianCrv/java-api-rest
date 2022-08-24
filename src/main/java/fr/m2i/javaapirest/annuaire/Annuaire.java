@@ -22,6 +22,34 @@ class Annuaire {
         return personne;
     }
 
+    public Personne update(Long id, Personne personne) {
+        for (int i = 0; i < personnes.size(); i++) {
+            Personne personneToUpdate = personnes.get(i);
+
+            if (personneToUpdate.getId() == id) {
+                personnes.remove(personneToUpdate);
+                personne.setId(id);
+                personnes.add(personne);
+
+                return personne;
+            }
+        }
+        return null;
+    }
+
+    public Personne delete(Long id, Personne personne) {
+        for (int i = 0; i < personnes.size(); i++) {
+            Personne personneToDelete = personnes.get(i);
+
+            if (personneToDelete.getId() == id) {
+                personnes.remove(personneToDelete);
+
+                return personne;
+            }
+        }
+        return null;
+    }
+
     public List<Personne> getPersonnes() {
         return personnes;
     }

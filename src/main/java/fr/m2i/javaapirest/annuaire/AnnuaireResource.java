@@ -50,4 +50,51 @@ public class AnnuaireResource {
         return annuaire.getPersonnes();
     }
 
+    @PUT
+    @Path("/update-{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Personne updatePersonne(Personne personne, @PathParam("id") Long id, @Context HttpServletRequest request) {
+        System.out.println("updatePersonne");
+
+        //Récuperer l'annuaire stocké dans la session
+        Annuaire annuaire = (Annuaire) request.getSession().getAttribute("annuaire");
+
+        //Dans le cas où mon annuaire est null, je l'instancie
+        if (annuaire == null) {
+            annuaire = new Annuaire();
+        }
+
+        //Modification de la personne
+        Personne updated = annuaire.update(id, personne);
+
+        //Créer, met a jour mon annuaire en session
+        request.getSession().setAttribute("annuaire", annuaire);
+
+        return updated;
+    }
+
+    @DELETE
+    @Path("/delete-{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Personne deletePersonne(Personne personne, @PathParam("id") Long id, @Context HttpServletRequest request) {
+        System.out.println("deletePersonne");
+
+        //Récuperer l'annuaire stocké dans la session
+        Annuaire annuaire = (Annuaire) request.getSession().getAttribute("annuaire");
+
+        //Dans le cas où mon annuaire est null, je l'instancie
+        if (annuaire == null) {
+            annuaire = new Annuaire();
+        }
+
+        //Modification de la personne
+        Personne deleted = annuaire.delete(id, personne);
+
+        //Créer, met a jour mon annuaire en session
+        request.getSession().setAttribute("annuaire", annuaire);
+
+        return deleted;
+    }
 }
