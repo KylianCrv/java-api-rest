@@ -1,6 +1,7 @@
 package fr.m2i.javaapirest.annuaire;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 class Annuaire {
@@ -22,19 +23,17 @@ class Annuaire {
         return personne;
     }
 
-    public Personne update(Long id, Personne personne) {
-        for (int i = 0; i < personnes.size(); i++) {
-            Personne personneToUpdate = personnes.get(i);
+    public boolean update(Long id, Personne personne) {
+        Personne toUdpate = getPersonneById(id);
 
-            if (personneToUpdate.getId() == id) {
-                personnes.remove(personneToUpdate);
-                personne.setId(id);
-                personnes.add(personne);
-
-                return personne;
-            }
+        if (toUdpate == null) {
+            return false;
         }
-        return null;
+
+        personnes.remove(toUdpate);
+        personne.setId(id);
+        personnes.add(personne);
+        return true;
     }
 
     public boolean delete(Long id) {
