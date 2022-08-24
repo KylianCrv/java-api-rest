@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
+             version="2.2">
+
+    <!--todo: configurer une persistence unit avec le nom: tp_rest_pu -->
+    <persistence-unit name="tp_rest_pu">
+
+        <!--todo: configurer une connexion avec l'url avec le port spécifié pour se connecter à la BDD MySQL-->
+        <!--Nom de la BDD : tp_rest-->
+        <properties>
+            <property name="hibernate.connection.driver_class" value="com.mysql.cj.jdbc.Driver" />
+            <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/tp_rest" />
+            <!--todo: configurer une connexion avec l'utilisateur: -->
+            <property name="hibernate.connection.user" value="root" />
+            <!--todo: configurer une connexion avec le mot de passe: -->
+            <property name="hibernate.connection.password" value="" />
+            <!--todo: configurer le dialecte SQL d'hibernate pour une base de données MySQL 5.7-->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL57Dialect" />
+            <!--todo: configurer hibernate pour qu'il recréer la base de données au lancement-->
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+            <property name="hibernate.show_sql" value="true" />
+        </properties>
+    </persistence-unit>
+
+
+
+</persistence>
