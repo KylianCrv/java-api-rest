@@ -1,12 +1,42 @@
 package fr.m2i.javaapirest.tpuser.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.persistence.*;
+
+@Entity
+@Table(name = "utilisateurs")
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(
+            name = "id")
     private int id;
+
+    @Column(
+            name = "lastname"
+    )
     private String lastname;
+
+    @Column(
+            name = "firstname"
+    )
     private String firstname;
+
+    @Column(
+            name = "role"
+    )
     private String role;
+
+    @Column(
+            name = "email"
+    )
     private String email;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Column(
+            name = "password"
+    )
     private String password;
 
     public User() {
@@ -69,4 +99,23 @@ public class User {
         this.password = password;
     }
 
+    public void copy(User userData) {
+
+        if (userData.getFirstname() != null) {
+            this.setFirstname(userData.getFirstname());
+        }
+        if (userData.getLastname() != null) {
+            this.setLastname(userData.getLastname());
+        }
+        if (userData.getRole() != null) {
+            this.setRole(userData.getRole());
+        }
+        if (userData.getEmail() != null) {
+            this.setEmail(userData.getEmail());
+        }
+        if (userData.getPassword() != null) {
+            this.setPassword(userData.getPassword());
+        }
+
+    }
 }
