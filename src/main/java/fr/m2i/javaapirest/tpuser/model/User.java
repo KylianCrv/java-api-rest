@@ -9,41 +9,30 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(
-            name = "id")
     private int id;
 
-    @Column(
-            name = "lastname"
-    )
+    @Column(name = "lastname", length = 100, nullable = false)
     private String lastname;
 
-    @Column(
-            name = "firstname"
-    )
+    @Column(name = "firstname", length = 100, nullable = false)
     private String firstname;
 
-    @Column(
-            name = "role"
-    )
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", columnDefinition = "ENUM('normal','admin') NOT NULL")
+    private Role role;
 
-    @Column(
-            name = "email"
-    )
+    @Column(name = "email", length = 100, unique = true, nullable = false)
     private String email;
 
+    @Column(name = "password", length = 40, nullable = false)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @Column(
-            name = "password"
-    )
     private String password;
 
     public User() {
 
     }
 
-    public User(String lastname, String firstname, String role, String email, String password) {
+    public User(String lastname, String firstname, Role role, String email, String password) {
         this.lastname = lastname;
         this.firstname = firstname;
         this.role = role;
@@ -75,11 +64,11 @@ public class User {
         this.firstname = firstname;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
@@ -99,23 +88,38 @@ public class User {
         this.password = password;
     }
 
-    public void copy(User userData) {
+    public void copy(User data) {
 
-        if (userData.getFirstname() != null) {
-            this.setFirstname(userData.getFirstname());
-        }
-        if (userData.getLastname() != null) {
-            this.setLastname(userData.getLastname());
-        }
-        if (userData.getRole() != null) {
-            this.setRole(userData.getRole());
-        }
-        if (userData.getEmail() != null) {
-            this.setEmail(userData.getEmail());
-        }
-        if (userData.getPassword() != null) {
-            this.setPassword(userData.getPassword());
+        if (data == null) {
+            return;
         }
 
+        if (data.getLastname() != null) {
+            this.lastname = data.getLastname();
+        }
+
+        if (data.getFirstname() != null) {
+            this.firstname = data.getFirstname();
+        }
+
+        if (data.getEmail() != null) {
+            this.email = data.getEmail();
+        }
+
+        if (data.getPassword() != null) {
+            this.password = data.getPassword();
+        }
+
+        if (data.getRole() != null) {
+            this.role = data.getRole();
+        }
+    }
+
+    public boolean hasAFieldEmpty() {
+        return getLastname() == null
+                || getFirstname() == null
+                || getEmail() == null
+                || getPassword() == null
+                || getRole() == null;
     }
 }

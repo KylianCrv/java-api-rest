@@ -1,5 +1,6 @@
 package fr.m2i.javaapirest.tpuser.dao;
 
+import fr.m2i.javaapirest.tpuser.exception.NotFoundException;
 import fr.m2i.javaapirest.tpuser.model.User;
 import fr.m2i.javaapirest.tpuser.util.SessionHelper;
 import java.util.List;
@@ -15,114 +16,138 @@ public class UserDAO {
         this.entityManager = SessionHelper.getEntityManager();
     }
 
-    public List<User> findAllUsers() {
-        Query findAllQuerry = entityManager.createQuery("SELECT u FROM User u");
-        return findAllQuerry.getResultList();
+    public List<User> findAll() {
+        Query query = entityManager.createQuery("select u from User u");
+        return query.getResultList();
     }
 
-    public User findUserById(int id) {
+    public User findById(Integer id) throws Exception {
+
+        if (id == null) {
+            throw new Exception("findById|Param id cannot be null");
+            // Si l'exception est levé la méthode s'arrête ici
+        }
+
         User founded = entityManager.find(User.class, id);
+
+        if (founded == null) {
+            throw new NotFoundException("findById|User with id :" + id + " was not found");
+            // Si l'exception est levé la méthode s'arrête ici
+        }
 
         return founded;
     }
 
-    public List<User> findUserByEmailOrLastname(String q, int count) {
-        Query findUserByEmailOrLastname = entityManager.createQuery("SELECT u FROM User u WHERE u.email LIKE ?1 OR u.lastname LIKE ?2");
-        findUserByEmailOrLastname.setParameter(1, q);
-        findUserByEmailOrLastname.setParameter(2, q);
-        return findUserByEmailOrLastname.setMaxResults(count).getResultList();
-    }
+    public void create(User userToCreate) throws Exception {
 
-    public boolean create(User user) {
-        //Vérifier le param utilisateur
+        if (userToCreate == null) {
+            throw new Exception("create|Param user cannot be null");
+        }
 
-        if (user == null) {
-            System.out.println("L'objet utilisateur ne peut pas être null");
-            return false;
+        if (userToCreate.hasAFieldEmpty()) {
+            throw new Exception("create|All fields in user must be filled");
         }
 
         EntityTransaction tx = null;
 
         try {
-
             tx = entityManager.getTransaction();
             tx.begin();
 
-            entityManager.persist(user);
+            entityManager.persist(userToCreate);
 
             tx.commit();
         } catch (Exception e) {
-            System.out.println("Une erreur s'est produite durant la création de l'utilisateur");
+            System.out.println("create|A error occured during persist");
+            System.out.println("Exception message : " + e.getMessage());
+
             if (tx != null) {
                 tx.rollback();
-                return false;
             }
+
+            throw e;
         }
-        return true;
     }
 
-    public boolean update(int id, User userData) {
+    public void update(Integer id, User userData) throws Exception {
 
-        User toUpdate = entityManager.find(User.class, id);
+        // La gestion d'erreur est faite dans le find by id
+        // La bonne exception sera levée si l'id passé param n'est pas valide ou si l'utilisateur n'est pas trouvé
+        User userToUpdate = findById(id);
 
-        if (toUpdate == null) {
-            System.out.println("Attention l'utilisateur avec l'id : " + id + " n'existe pas.");
-            return false;
+        if (userData == null) {
+            throw new Exception("update|Param user cannot be null");
         }
 
-        toUpdate.copy(userData);
+        userToUpdate.copy(userData);
 
         EntityTransaction tx = null;
 
         try {
-
             tx = entityManager.getTransaction();
             tx.begin();
 
-            entityManager.merge(toUpdate);
+            entityManager.merge(userToUpdate);
 
             tx.commit();
-
         } catch (Exception e) {
-            System.out.println("Une erreur s'est produite durant la modification de l'utilisateur");
+            System.out.println("update|A error occured during merge");
+            System.out.println("Exception message : " + e.getMessage());
+
             if (tx != null) {
                 tx.rollback();
-                return false;
             }
-        }
-        return true;
 
+            throw e;
+        }
     }
 
-    public boolean delete(int id) {
+    public List<User> search(String query, Integer count) throws Exception {
 
-        User toDelete = entityManager.find(User.class, id);
-
-        if (toDelete == null) {
-            System.out.println("Attention le produit avec l'id : " + id + " n'existe pas.");
-            return false;
+        if (query == null) {
+            throw new Exception("search|Param query is mandatory");
         }
+
+        Query searchQuery = entityManager.createQuery("select u from User u where u.lastname like :query or u.email like :query");
+        searchQuery.setParameter("query", "%" + query + "%");
+
+        if (count != null && count != 0) {
+            searchQuery.setMaxResults(count);
+        }
+
+        List<User> users = searchQuery.getResultList();
+
+        if (users == null || users.isEmpty()) {
+            throw new NotFoundException("search|No user founded for query :" + query);
+        }
+
+        return users;
+    }
+
+    public void delete(Integer id) throws Exception {
+
+        // La gestion d'erreur est faite dans le find by id
+        // La bonne exception sera levée si l'id passé param n'est pas valide ou si l'utilisateur n'est pas trouvé
+        User toDelete = findById(id);
 
         EntityTransaction tx = null;
 
         try {
-
             tx = entityManager.getTransaction();
             tx.begin();
 
             entityManager.remove(toDelete);
 
             tx.commit();
-
         } catch (Exception e) {
-            System.out.println("Une erreur s'est produite durant la suppression du produit");
+            System.out.println("delete|A error occured during delete");
+            System.out.println("Exception message : " + e.getMessage());
+
             if (tx != null) {
                 tx.rollback();
-                return false;
-
             }
-        }
-        return true;
-    }
 
+            throw e;
+        }
+    }
 }

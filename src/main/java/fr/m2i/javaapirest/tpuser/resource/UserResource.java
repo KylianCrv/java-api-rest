@@ -1,112 +1,167 @@
 package fr.m2i.javaapirest.tpuser.resource;
 
+import fr.m2i.javaapirest.tpuser.exception.NotFoundException;
 import fr.m2i.javaapirest.tpuser.dao.UserDAO;
 import fr.m2i.javaapirest.tpuser.model.User;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("/users")
 public class UserResource {
 
-    UserDAO userDAO = new UserDAO();
+    private final UserDAO dao;
 
-//URI : /users
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getUsers(@Context HttpServletRequest request) {
-        System.out.println("getUsers");
-
-        return Response.status(Response.Status.OK).entity(userDAO.findAllUsers()).build();
+    public UserResource() {
+        this.dao = new UserDAO();
     }
 
-//URI : /users/id
+    // URI : /
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<User> getUsers() {
+        return dao.findAll();
+    }
+
+    // URI : /1
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUserById(@PathParam("id") int id, @Context HttpServletRequest request) {
-        System.out.println("getUserById");
+    public Response getUserById(@PathParam("id") Integer id) {
 
-        User founded = userDAO.findUserById(id);
-
-        if (founded == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("An error has occured").build();
+        try {
+            User founded = dao.findById(id);
+            return Response.status(Response.Status.OK).entity(founded).build();
+        } catch (NotFoundException nfe) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.NOT_FOUND)
+                            .entity("User was not found")
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("An error occurred")
+                            .build()
+            );
         }
-
-        return Response.status(Response.Status.OK).entity(founded).build();
     }
 
-//URI : /users/id
-    @GET
-    @Path("/search")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response searchUserByEmailOrLastname(@QueryParam("q") String q, @QueryParam("count") int count, @Context HttpServletRequest request) {
-        System.out.println("searchUserByEmailOrLastname");
-
-        List<User> searched = userDAO.findUserByEmailOrLastname(q, count);
-
-        if (searched == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("An error occured").build();
-
-        }
-        return Response.status(Response.Status.OK).entity(searched).build();
-
-    }
-
-//URI : /users
+    // URI : /
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createUser(User user, @Context HttpServletRequest request) {
-        System.out.println("createUser");
+    public Response createUser(User user) {
 
-        boolean success = userDAO.create(user);
-
-        if (!success) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("An error as occured").build();
-
+        try {
+            dao.create(user);
+            return Response.status(Response.Status.CREATED)
+                    .entity("User successfully created").build();
+        } catch (Exception e) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("An error occurred")
+                            .build()
+            );
         }
-
-        return Response.status(Response.Status.CREATED).entity("User succesfully created").build();
     }
 
-//URI : /users/{id}
+    // URI : /1
     @PUT
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateUser(User userData, @PathParam("id") int id, @Context HttpServletRequest request) {
-        System.out.println("updateUser");
+    public Response updateUser(@PathParam("id") Integer id, User userData) {
+        try {
+            dao.update(id, userData);
+            return Response.status(Response.Status.OK)
+                    .entity("User successfully modified").build();
+        } catch (NotFoundException nfe) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.NOT_FOUND)
+                            .entity("User was not found")
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("An error occurred")
+                            .build()
+            );
+        }
+    }
+    // URI : /search?q=lastname
 
-//        if (userData.getId() != id) {
-//            return Response.status(Response.Status.NOT_FOUND).entity("User was not found").build();
-//        }
-        boolean success = userDAO.update(id, userData);
+    @GET
+    @Path("/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchUser(@QueryParam("q") String query, @DefaultValue("1") @QueryParam("count") String countStr) {
 
-        if (!success) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("An error as occured").build();
+        // query is mandatory
+        if (query == null) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("An error occurred")
+                            .build()
+            );
         }
 
-        return Response.status(Response.Status.OK).entity("User succesfully modified").build();
+        // default value count
+        Integer count = 1;
 
+        try {
+            // try to convert the c param into Integer
+            count = Integer.parseInt(countStr);
+        } catch (NumberFormatException e) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("An error occurred")
+                            .build()
+            );
+        }
+
+        try {
+            List<User> users = dao.search(query, count);
+            return Response.status(Response.Status.OK).entity(users).build();
+        } catch (NotFoundException nfe) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.NOT_FOUND)
+                            .entity("User was not found")
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("An error occurred")
+                            .build()
+            );
+        }
     }
 
-//URI : /users/{id}
+    // URI : /1
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteUser(@PathParam("id") int id, @Context HttpServletRequest request) {
-        System.out.println("deleteUser");
+    public Response deleteUser(@PathParam("id") Integer id) {
 
-        boolean success = userDAO.delete(id);
-
-        if (!success) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("An error as occured").build();
+        try {
+            dao.delete(id);
+            return Response.status(Response.Status.OK)
+                    .entity("User successfully deleted").build();
+        } catch (NotFoundException nfe) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.NOT_FOUND)
+                            .entity("User was not found")
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new WebApplicationException(
+                    Response.status(Response.Status.BAD_REQUEST)
+                            .entity("An error occurred")
+                            .build()
+            );
         }
 
-        return Response.status(Response.Status.OK).entity("User succesfully deleted").build();
-
     }
-
 }
